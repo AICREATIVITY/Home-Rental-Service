@@ -15,6 +15,7 @@ app.use(express.static("public"));
 const PORT = 3002;
 mongoose
   .connect(process.env.MONGODB_URL, {
+    dbName: "Nest_Service",
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

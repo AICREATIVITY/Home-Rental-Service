@@ -11,13 +11,14 @@ const storage = multer.diskStorage({
     cb(null, "public/uploads/"); // store uploaded files in the "upload" folders
   },
   filename: function (req, file, cb) {
-    cd(null, file.originalname);
+    cb(null, file.originalname);
   }, // use the original file name
 });
 
+const upload = multer({ storage });
 // USER REGISTER
 
-router.post("/register", Upload.single("profileImage"), async (req, res) => {
+router.post("/register", upload.single("profileImage"), async (req, res) => {
   try {
     // take all information from the form
     const { firstName, lastName, email, password } = req.body;
@@ -66,3 +67,31 @@ router.post("/register", Upload.single("profileImage"), async (req, res) => {
     });
   }
 });
+
+// USER LOGIN
+
+router.post("/login", async (req, res) => {
+  try {
+    /* Take The Information from the Form */
+    const { email, password } = req.body;
+
+    /* Check if User Exists  */
+    const user = await user.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        message: "User Not Found",
+      });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid Password",
+      });
+    }
+
+    /* Generate JWT Token */
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+  } catch (error) {}
+});
+
+module.exports = router;
